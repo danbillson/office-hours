@@ -2,6 +2,7 @@ import '@fontsource/work-sans/300.css'
 import '@fontsource/work-sans/400.css'
 import '@fontsource/work-sans/600.css'
 import '@fontsource/work-sans/700.css'
+import Head from 'next/head'
 import { createGlobalStyle, ThemeProvider } from 'styled-components'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import axios from 'axios'
@@ -48,6 +49,10 @@ const queryClient = new QueryClient({
 export default function App({ Component, pageProps }) {
   return (
     <>
+      <Head>
+        <title>Climb Office Hours</title>
+        <link rel="icon" href="/favicon.ico"></link>
+      </Head>
       <GlobalStyle />
       <ThemeProvider theme={theme}>
         <QueryClientProvider client={queryClient}>
