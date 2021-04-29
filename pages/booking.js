@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useQuery } from 'react-query'
 import { useRouter } from 'next/router'
 import styled from 'styled-components'
-import { format, addWeeks, startOfWeek } from 'date-fns'
+import { format, addWeeks, startOfWeek, isWeekend, addDays } from 'date-fns'
 import { useLocalStorage } from 'react-use'
 import { BsCaretLeftFill, BsCaretRightFill } from 'react-icons/bs'
 import Day from '../components/day'
@@ -16,8 +16,11 @@ export default function Booking() {
     if (!user?.name) router.push('/')
   }, [user?.name])
 
+  const today = new Date()
   const [currentWeek, setCurrentWeek] = useState(() =>
-    startOfWeek(new Date(), { weekStartsOn: 1 })
+    startOfWeek(isWeekend(today) ? addDays(today, 2) : today, {
+      weekStartsOn: 1,
+    })
   )
 
   const weekQueryKey = format(currentWeek, 'MM-dd-yyyy').toString()
