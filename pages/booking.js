@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useQuery } from 'react-query'
+import { useQuery, useQueryClient } from 'react-query'
 import { useRouter } from 'next/router'
 import styled from 'styled-components'
 import { format, addWeeks, startOfWeek, isWeekend, addDays } from 'date-fns'
@@ -7,6 +7,8 @@ import { useLocalStorage } from 'react-use'
 import { BsCaretLeftFill, BsCaretRightFill } from 'react-icons/bs'
 import Day from '../components/day'
 import ColourPicker from '../components/colourPicker'
+
+const formatWeek = (week) => format(week, 'MM-dd-yyyy').toString()
 
 export default function Booking() {
   const [user] = useLocalStorage('office-hours')
@@ -16,6 +18,8 @@ export default function Booking() {
     if (!user?.name) router.push('/')
   }, [user?.name])
 
+  const queryClient = useQueryClient()
+
   const today = new Date()
   const [currentWeek, setCurrentWeek] = useState(() =>
     startOfWeek(isWeekend(today) ? addDays(today, 2) : today, {
@@ -23,8 +27,15 @@ export default function Booking() {
     })
   )
 
-  const weekQueryKey = format(currentWeek, 'MM-dd-yyyy').toString()
+  const weekQueryKey = formatWeek(currentWeek)
   const { data, isLoading, error } = useQuery(`/api/dates/${weekQueryKey}`)
+
+  const prefetchBookings = async (amount) => {
+    await queryClient.prefetchQuery(
+      `/api/dates/${formatWeek(addWeeks(currentWeek, amount))}`,
+      { staleTime: 5000 }
+    )
+  }
 
   const weekStarting = format(currentWeek, 'dd/MM')
 
@@ -40,9 +51,21 @@ export default function Booking() {
         <ColourPicker user={user?.name} week={weekQueryKey} />
       </Header>
       <WeekSelect>
-        <BsCaretLeftFill onClick={() => changeWeek(-1)} />
+        <BsCaretLeftFill
+          onClick={() => {
+            changeWeek(-1)
+            prefetchBookings(-2)
+          }}
+          onMouseOver={() => prefetchBookings(-1)}
+        />
         <h4>Week {weekStarting}</h4>
-        <BsCaretRightFill onClick={() => changeWeek(1)} />
+        <BsCaretRightFill
+          onClick={() => {
+            changeWeek(1)
+            prefetchBookings(2)
+          }}
+          onMouseOver={() => prefetchBookings(1)}
+        />
       </WeekSelect>
       <WeekPreview>
         {isLoading
