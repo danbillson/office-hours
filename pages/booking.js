@@ -47,12 +47,7 @@ export default function Booking() {
           : error
           ? 'An error occured try to get bookings'
           : data?.map((date) => (
-              <Day
-                key={date.date}
-                user={user?.name}
-                week={weekQueryKey}
-                {...date}
-              />
+              <Day key={date.date} user={user} week={weekQueryKey} {...date} />
             ))}
       </WeekPreview>
     </>

@@ -6,20 +6,62 @@ import Button from './button'
 
 const officeLimit = 7
 
+const removeUser = (array, user) => array.filter(({ name }) => name !== user)
+
 export default function Day({ user, week, date, am, pm, day }) {
   const queryClient = useQueryClient()
-  const invalidate = () => queryClient.invalidateQueries(`/api/dates/${week}`)
+  const queryKey = `/api/dates/${week}`
+
   const { mutate: bookDate } = useMutation(
-    (time) => axios.post('/api/book', { user, date, time }),
+    (time) => axios.post('/api/book', { user: user.name, date, time }),
     {
-      onSuccess: invalidate,
+      onMutate: async (time) => {
+        await queryClient.cancelQueries(queryKey)
+        const previousBookings = queryClient.getQueryData(queryKey)
+        queryClient.setQueryData(queryKey, (old) =>
+          old.map((oldDate) => {
+            if (oldDate.date !== date) return oldDate
+
+            const updatedList = [...oldDate[time], user]
+            return {
+              ...oldDate,
+              [time]: updatedList,
+            }
+          })
+        )
+
+        return { previousBookings }
+      },
+      onError: (err, newBooking, context) => {
+        queryClient.setQueryData('todos', context.previousBookings)
+      },
     }
   )
 
   const { mutate: deleteBooking } = useMutation(
-    () => axios.delete('/api/book', { data: { user, date } }),
+    () => axios.delete('/api/book', { data: { user: user.name, date } }),
     {
-      onSuccess: invalidate,
+      onMutate: async () => {
+        await queryClient.cancelQueries(queryKey)
+        const previousBookings = queryClient.getQueryData(queryKey)
+        queryClient.setQueryData(queryKey, (old) =>
+          old.map((oldDate) => {
+            if (oldDate.date !== date) return oldDate
+
+            return {
+              ...oldDate,
+              am: removeUser(oldDate.am, user.name),
+              pm: removeUser(oldDate.pm, user.name),
+              day: removeUser(oldDate.day, user.name),
+            }
+          })
+        )
+
+        return { previousBookings }
+      },
+      onError: (err, newBooking, context) => {
+        queryClient.setQueryData('todos', context.previousBookings)
+      },
     }
   )
 
@@ -34,7 +76,7 @@ export default function Day({ user, week, date, am, pm, day }) {
 
   const combined = [...am, ...pm, ...day]
   const noOne = combined.length === 0
-  const attending = combined.map(({ name }) => name).includes(user)
+  const attending = combined.map(({ name }) => name).includes(user.name)
 
   const totalAM = am.length + day.length
   const totalPM = pm.length + day.length
