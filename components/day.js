@@ -33,7 +33,7 @@ export default function Day({ user, week, date, am, pm, day }) {
         return { previousBookings }
       },
       onError: (err, newBooking, context) => {
-        queryClient.setQueryData('todos', context.previousBookings)
+        queryClient.setQueryData(queryKey, context.previousBookings)
       },
     }
   )
@@ -60,7 +60,7 @@ export default function Day({ user, week, date, am, pm, day }) {
         return { previousBookings }
       },
       onError: (err, newBooking, context) => {
-        queryClient.setQueryData('todos', context.previousBookings)
+        queryClient.setQueryData(queryKey, context.previousBookings)
       },
     }
   )

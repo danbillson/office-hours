@@ -6,18 +6,37 @@ import { BiPalette } from 'react-icons/bi'
 import { useClickAway } from 'react-use'
 import { colours, randomHex } from '../lib/colours'
 
+const updateColour = (time, userName, colour) =>
+  time.map((user) => (user.name === userName ? { ...user, colour } : user))
+
 export default function ColourPicker({ user, week }) {
   const modalRef = useRef(null)
   const [showModal, setShowModal] = useState(false)
   useClickAway(modalRef, () => setShowModal(false))
 
   const queryClient = useQueryClient()
-  const invalidate = () => queryClient.invalidateQueries(`/api/dates/${week}`)
+  const queryKey = `/api/dates/${week}`
 
   const { mutate: changeColour } = useMutation(
     (colour) => axios.post('/api/colour', { user, colour }),
     {
-      onSuccess: invalidate,
+      onMutate: async (colour) => {
+        await queryClient.cancelQueries(queryKey)
+        const previousBookings = queryClient.getQueryData(queryKey)
+        queryClient.setQueryData(queryKey, (old) =>
+          old.map((oldDate) => ({
+            ...oldDate,
+            am: updateColour(oldDate.am, user, colour),
+            pm: updateColour(oldDate.pm, user, colour),
+            day: updateColour(oldDate.day, user, colour),
+          }))
+        )
+
+        return { previousBookings }
+      },
+      onError: (err, newBooking, context) => {
+        queryClient.setQueryData(queryKey, context.previousBookings)
+      },
     }
   )
 
