@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from 'react-query'
 import axios from 'axios'
-import { format, parse, isPast } from 'date-fns'
+import { format, parse, isPast, addDays } from 'date-fns'
 import styled from 'styled-components'
 import Button from './button'
 
@@ -71,6 +71,7 @@ export default function Day({ user, week, date, am, pm, day }) {
 
   const usableDate = parse(date, 'dd/MM/yyyy', new Date())
   const dayOfWeek = format(usableDate, 'eee')
+  const tomorrow = addDays(usableDate, 1)
 
   const times = [
     { name: 'Morning', list: am },
@@ -110,7 +111,7 @@ export default function Day({ user, week, date, am, pm, day }) {
           )
         )
       )}
-      {isPast(usableDate) ? null : attending ? (
+      {isPast(tomorrow) ? null : attending ? (
         <Remove onClick={deleteBooking}>
           I don’t want to come in on this day anymore.
         </Remove>
