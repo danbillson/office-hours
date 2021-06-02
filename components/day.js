@@ -71,6 +71,7 @@ export default function Day({ user, week, date, am, pm, day }) {
 
   const usableDate = parse(date, 'dd/MM/yyyy', new Date())
   const dayOfWeek = format(usableDate, 'eee')
+  const dayOfMonth = format(usableDate, 'do')
   const tomorrow = addDays(usableDate, 1)
 
   const times = [
@@ -92,7 +93,9 @@ export default function Day({ user, week, date, am, pm, day }) {
 
   return (
     <Container>
-      <DayOfWeek>{dayOfWeek}</DayOfWeek>
+      <DayOfWeek>
+        {dayOfWeek} <span>{dayOfMonth}</span>
+      </DayOfWeek>
       {noOne ? (
         <Empty>No one 😢</Empty>
       ) : (
@@ -153,6 +156,10 @@ const DayOfWeek = styled.p`
   text-transform: uppercase;
   font-weight: 700;
   font-size: 20px;
+
+  span {
+    color: ${({ theme }) => theme.colors.grey};
+  }
 `
 
 const Time = styled.p`
