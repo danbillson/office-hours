@@ -8,6 +8,10 @@ const officeLimit = 7
 
 const removeUser = (array, user) => array.filter(({ name }) => name !== user)
 
+const excludeDogs = (array) => array.filter(({ name }) => !name.includes('🐶'))
+
+const attendance = (array) => excludeDogs(array).length
+
 export default function Day({ user, week, date, am, pm, day }) {
   const queryClient = useQueryClient()
   const queryKey = `/api/dates/${week}`
@@ -78,8 +82,8 @@ export default function Day({ user, week, date, am, pm, day }) {
   const noOne = combined.length === 0
   const attending = combined.map(({ name }) => name).includes(user.name)
 
-  const totalAM = am.length + day.length
-  const totalPM = pm.length + day.length
+  const totalAM = attendance(am) + attendance(day)
+  const totalPM = attendance(pm) + attendance(day)
   const amAvailable = totalAM < officeLimit
   const pmAvailable = totalPM < officeLimit
   const dayAvailable = Math.max(totalAM, totalPM) < officeLimit
