@@ -4,7 +4,7 @@ import { format, parse, isPast, addDays } from 'date-fns'
 import styled from 'styled-components'
 import Button from './button'
 
-const officeLimit = 20
+const officeLimit = 12
 
 const removeUser = (array, user) => array.filter(({ name }) => name !== user)
 
