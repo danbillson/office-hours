@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { useMutation } from "react-query";
+import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import styled from "styled-components";
 import { useCookie } from "react-use";
@@ -14,15 +14,13 @@ export default function Home() {
   const [, setUser] = useCookie("office-hours");
   const router = useRouter();
 
-  const { mutate, error } = useMutation(
-    () => axios.post("/api/user", { name, colour: randomColour() }),
-    {
-      onSuccess: ({ data }) => {
-        setUser(data);
-        router.push("/booking");
-      },
-    }
-  );
+  const { mutate, error } = useMutation({
+    mutationFn: () => axios.post("/api/user", { name, colour: randomColour() }),
+    onSuccess: ({ data }) => {
+      setUser(data);
+      router.push("/booking");
+    },
+  });
 
   const handleSubmit = (event) => {
     event.preventDefault();

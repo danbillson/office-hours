@@ -1,20 +1,20 @@
-import '@fontsource/work-sans/300.css'
-import '@fontsource/work-sans/400.css'
-import '@fontsource/work-sans/600.css'
-import '@fontsource/work-sans/700.css'
-import Head from 'next/head'
-import { createGlobalStyle, ThemeProvider } from 'styled-components'
-import { QueryClient, QueryClientProvider } from 'react-query'
-import axios from 'axios'
-import { colours, createColours } from '../lib/colours'
+import "@fontsource/work-sans/300.css";
+import "@fontsource/work-sans/400.css";
+import "@fontsource/work-sans/600.css";
+import "@fontsource/work-sans/700.css";
+import Head from "next/head";
+import { createGlobalStyle, ThemeProvider } from "styled-components";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import axios from "axios";
+import { colours, createColours } from "../lib/colours";
 
 const theme = {
   colors: {
-    black: '#444',
-    grey: '#ccc',
+    black: "#444",
+    grey: "#ccc",
   },
   ...createColours(colours),
-}
+};
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -30,12 +30,12 @@ const GlobalStyle = createGlobalStyle`
     color: ${theme.colors.black};
     box-sizing: border-box;
   }
-`
+`;
 
 const defaultQueryFn = async ({ queryKey }) => {
-  const { data } = await axios.get(queryKey)
-  return data
-}
+  const { data } = await axios.get(queryKey);
+  return data;
+};
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +44,7 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});
 
 export default function App({ Component, pageProps }) {
   return (
@@ -60,5 +60,5 @@ export default function App({ Component, pageProps }) {
         </QueryClientProvider>
       </ThemeProvider>
     </>
-  )
+  );
 }

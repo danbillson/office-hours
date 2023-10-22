@@ -1,19 +1,16 @@
-import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { addDays, addWeeks, format, isWeekend, startOfWeek } from "date-fns";
 import { useRouter } from "next/router";
-import styled from "styled-components";
-import { format, addWeeks, startOfWeek, isWeekend, addDays } from "date-fns";
-import { useCookie } from "react-use";
+import { useEffect, useState } from "react";
 import { BsCaretLeftFill, BsCaretRightFill } from "react-icons/bs";
-import Day from "../components/day";
+import styled from "styled-components";
 import ColourPicker from "../components/colourPicker";
+import Day from "../components/day";
 
 const formatWeek = (week) => format(week, "MM-dd-yyyy").toString();
 
-export default function Booking() {
-  const [serialisedUser] = useCookie("office-hours");
+export default function Booking({ user }) {
   const router = useRouter();
-  const user = serialisedUser ? JSON.parse(serialisedUser) : null;
 
   useEffect(() => {
     if (!user?.name) router.push("/");
@@ -29,13 +26,15 @@ export default function Booking() {
   );
 
   const weekQueryKey = formatWeek(currentWeek);
-  const { data, isLoading, error } = useQuery(`/api/dates/${weekQueryKey}`);
+  const { data, isLoading, error } = useQuery({
+    queryKey: [`/api/dates/${weekQueryKey}`],
+  });
 
   const prefetchBookings = async (amount) => {
-    await queryClient.prefetchQuery(
-      `/api/dates/${formatWeek(addWeeks(currentWeek, amount))}`,
-      { staleTime: 5000 }
-    );
+    await queryClient.prefetchQuery({
+      queryKey: [`/api/dates/${formatWeek(addWeeks(currentWeek, amount))}`],
+      staleTime: 5000,
+    });
   };
 
   const weekStarting = format(currentWeek, "dd/MM");
@@ -79,6 +78,15 @@ export default function Booking() {
       </WeekPreview>
     </>
   );
+}
+
+export async function getServerSideProps(ctx) {
+  const serialisedUser = ctx.req.cookies["office-hours"];
+  const user = serialisedUser ? JSON.parse(serialisedUser) : null;
+
+  return {
+    props: { user },
+  };
 }
 
 const Header = styled.header`
